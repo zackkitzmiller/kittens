@@ -55,7 +55,12 @@ module.exports = (clients, config) ->
         # - set [serverName] nick [nick]
         # - set [serverName] user [user]
         # - set [serverName] name [name]
+        # - set [serverName] mode [channel] [nick] [mode]
+        # - set [serverName] host [channel] [nick] [host]
         #
+        # - get [serverName] mode [channel] [nick]
+        # - get [serverName] host [channel] [nick]
+        # 
 
         # Parse Command
         parseCommand = (command) ->
@@ -72,6 +77,7 @@ module.exports = (clients, config) ->
                         when 'whois' then whois(args); break
                         when 'say' then say(args); break 
                         when 'set' then set(args); break
+                        when 'get' then get(args); break
                         else console.log red + 'Use help for a list of commands' + reset
 
         # Help
@@ -94,7 +100,11 @@ module.exports = (clients, config) ->
                 console.log '- set [serverName] nick [nick]'
                 console.log '- set [serverName] user [user]'
                 console.log '- set [serverName] name [name]'
-
+                console.log '- set [serverName] mode [channel] [user] [mode]'
+                console.log '- set [serverName] host [channel] [user] [host]'
+                console.log '\n- get [serverName] mode [channel] [user]'
+                console.log '- get [serverName] host [channel] [user]'
+        
         # Quit
         quit = (args) ->
                 args[1] = 'all'
@@ -189,8 +199,19 @@ module.exports = (clients, config) ->
                                         when 'nick' then setNick(args, i); return
                                         when 'user' then setUser(args, i); return
                                         when 'name' then setName(args, i); return
+                                        when 'mode' then setMode(args, i); return
+                                        when 'host' then setHost(args, i); return
+                                        else console.log red + 'Use help for a list of commands' + reset                                        
+                console.log red + 'Server does not exist' + reset
+
+        # Get
+        get = (args) ->
+                for i in [0..clients.length-1] by 1
+                        if args[1] is config[i].serverName
+                                switch args[2]
+                                        when 'mode' then getMode(args, i); return
+                                        when 'host' then getHost(args, i); return
                                         else console.log red + 'Use help for a list of commands' + reset
-                                        
                 console.log red + 'Server does not exist' + reset
 
         # Set server
@@ -250,6 +271,31 @@ module.exports = (clients, config) ->
                         console.log green + 'The realname ' + args[3] + ' will be used on restart' + reset
                 else console.log red + 'A new name can\'t be empty' + reset
 
+        # Set mode
+        setMode = (args, i) ->
+                if args.length > 5
+                        config[i].users[args[4]][args[3]].mode = args[5]
+                        updateConfig(config)
+                else console.log red + 'Use help for a list of commands' + reset
+
+        # Set host
+        setHost = (args, i) ->
+                if args.length > 5
+                        config[i].users[args[4]][args[3]].host = args[5]
+                        updateConfig(config)
+                else console.log red + 'Use help for a list of commands' + reset
+
+        # Get mode
+        getMode = (args, i) ->
+                if args.length > 4
+                        console.log 'The mode for ' + args[4] + ' in ' + args[3] + ' is ' + green + config[i].users[args[4]][args[3]].mode + reset
+                else console.log red + 'Use help for a list of commands' + reset
+        # Get host
+        getHost = (args, i) ->
+                if args.length > 4
+                        console.log 'The host for ' + args[4] + ' in ' + args[3] + ' is ' + green + config[i].users[args[4]][args[3]].host + reset
+                else console.log red + 'Use help for a list of commands' + reset
+                
 # Starts with
 String::startsWith = (it) ->
         @slice(0, it.length) is it
