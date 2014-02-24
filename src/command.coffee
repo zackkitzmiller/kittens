@@ -23,6 +23,9 @@ module.exports = (clients, config) ->
         #############
 
         process.stdin.resume()
+        process.stdin.on 'readable', (chunk) ->
+                process.stdout.write '> '
+
         process.stdin.on 'data', (chunk) ->
                 parseCommand chunk.toString()
 
